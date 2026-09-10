@@ -26,7 +26,7 @@ export default function Page() {
     }
   };
 
-  // Continuous camera forward movement
+  // Monotonic forward camera trajectory
   const baseScale = 1 + scrollProgress * 4.8;
   const panX = -scrollProgress * 42;
   const panY = -scrollProgress * 26;
@@ -39,8 +39,9 @@ export default function Page() {
       ? 1
       : (scrollProgress - 0.40) / 0.06;
 
-  // Cinematic deep-black progressive scale
-  const blackVibeIntensity = Math.min(scrollProgress * 1.25, 0.95);
+  // As we approach/enter, blackness fades out and building glow brightens
+  const blackFade = Math.max(1 - scrollProgress * 0.85, 0.1);
+  const buildingBrightness = 1 + scrollProgress * 0.18; // Enhances building light
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-black text-white select-none">
@@ -48,12 +49,13 @@ export default function Page() {
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         {/* Layer 1: Closed Door Exterior (1.png) */}
         <div
-          className="absolute inset-0 will-change-transform"
+          className="absolute inset-0 will-change-transform transition-[filter] duration-300"
           style={{
             transform: `translate3d(${panX}%, ${panY}%, 0) scale(${baseScale})`,
             transformOrigin: "72% 70%",
             opacity: 1 - transitionPhase,
             visibility: transitionPhase >= 1 ? "hidden" : "visible",
+            filter: `brightness(${buildingBrightness}) contrast(1.05)`,
           }}
         >
           <Image
@@ -66,29 +68,31 @@ export default function Page() {
             className="object-cover object-center"
           />
 
-          {/* Exterior Entrance Flare */}
+          {/* Exterior Entrance Ambient Flare */}
           <div
-            className="absolute rounded-full pointer-events-none blur-3xl"
+            className="absolute rounded-full pointer-events-none blur-3xl transition-all duration-300"
             style={{
               top: "58%",
               left: "68%",
-              width: "300px",
-              height: "300px",
+              width: "360px",
+              height: "360px",
               background:
-                "radial-gradient(circle, rgba(56, 189, 248, 0.45) 0%, rgba(249, 115, 22, 0.15) 50%, transparent 70%)",
-              opacity: Math.min(scrollProgress * 2, 0.6),
+                "radial-gradient(circle, rgba(56, 189, 248, 0.6) 0%, rgba(249, 115, 22, 0.25) 45%, transparent 70%)",
+              opacity: 0.3 + scrollProgress * 0.7,
+              transform: `scale(${1 + scrollProgress * 0.8})`,
             }}
           />
         </div>
 
         {/* Layer 2: Open Door Interior (2.png) */}
         <div
-          className="absolute inset-0 will-change-transform"
+          className="absolute inset-0 will-change-transform transition-[filter] duration-300"
           style={{
             transform: `translate3d(${panX}%, ${panY}%, 0) scale(${baseScale})`,
             transformOrigin: "72% 70%",
             opacity: transitionPhase,
             visibility: transitionPhase <= 0 ? "hidden" : "visible",
+            filter: `brightness(${buildingBrightness * 1.05}) contrast(1.04)`,
           }}
         >
           <Image
@@ -101,40 +105,40 @@ export default function Page() {
             className="object-cover object-center"
           />
 
-          {/* Interior Illumination */}
+          {/* Golden/Cyan Interior Room Radiance */}
           <div
-            className="absolute rounded-full pointer-events-none blur-3xl"
+            className="absolute rounded-full pointer-events-none blur-3xl transition-opacity duration-500"
             style={{
               top: "60%",
               left: "72%",
-              width: "400px",
-              height: "400px",
+              width: "480px",
+              height: "480px",
               background:
-                "radial-gradient(circle, rgba(251, 146, 60, 0.35) 0%, rgba(56, 189, 248, 0.25) 45%, transparent 70%)",
-              opacity: Math.max((scrollProgress - 0.45) * 1.8, 0),
+                "radial-gradient(circle, rgba(251, 146, 60, 0.5) 0%, rgba(56, 189, 248, 0.35) 45%, transparent 70%)",
+              opacity: Math.max((scrollProgress - 0.4) * 1.6, 0),
             }}
           />
         </div>
 
-        {/* Global Ambient Dark Base Tint */}
-        <div className="absolute inset-0 pointer-events-none bg-black/25" />
-
-        {/* Top/Bottom Cinematic Cinema-Scope Letterbox Shading */}
-        <div
-          className="absolute inset-0 pointer-events-none transition-opacity duration-300 bg-gradient-to-t from-black/90 via-transparent to-black/75"
-          style={{ opacity: 0.7 + blackVibeIntensity * 0.3 }}
+        {/* Soft Dimming Base (Dissolves as you approach) */}
+        <div 
+          className="absolute inset-0 pointer-events-none bg-black/30 transition-opacity duration-300"
+          style={{ opacity: blackFade }}
         />
 
-        {/* Left Peripheral City Dimmer (Keeps eye drawn to the entrance) */}
-        <div className="absolute inset-y-0 left-0 w-2/5 pointer-events-none bg-gradient-to-r from-black/60 to-transparent" />
+        {/* Cinematic Vertical Frame Shading (Fades down dynamically) */}
+        <div
+          className="absolute inset-0 pointer-events-none transition-opacity duration-300 bg-gradient-to-t from-black/80 via-transparent to-black/60"
+          style={{ opacity: blackFade * 0.9 }}
+        />
 
-        {/* Deep Peripheral Radial Black Vignette */}
+        {/* Dynamic Vignette (Opens up widely as building gets closer) */}
         <div
           className="absolute inset-0 pointer-events-none transition-opacity duration-300"
           style={{
             background:
-              "radial-gradient(circle at 72% 70%, transparent 18%, rgba(0, 0, 0, 0.75) 55%, rgba(0, 0, 0, 0.98) 100%)",
-            opacity: 0.55 + blackVibeIntensity * 0.45,
+              "radial-gradient(circle at 72% 70%, transparent 40%, rgba(0, 0, 0, 0.7) 75%, rgba(0, 0, 0, 0.95) 100%)",
+            opacity: blackFade * 0.8,
           }}
         />
       </div>
@@ -142,13 +146,13 @@ export default function Page() {
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-8 py-6 md:px-16 pointer-events-none">
         <div className="pointer-events-auto cursor-pointer" onClick={handleReset}>
-          <span className="text-xl font-black tracking-widest text-orange-500">CYLIX</span>
+          <span className="text-xl font-black tracking-widest text-orange-500 drop-shadow">CYLIX</span>
         </div>
         <div className="pointer-events-auto">
           <button
             type="button"
             onClick={handleReset}
-            className="rounded-full border border-white/20 bg-black/50 px-4 py-1.5 text-xs font-medium tracking-wide uppercase text-gray-200 backdrop-blur-md transition hover:border-orange-500 hover:text-white"
+            className="rounded-full border border-white/20 bg-black/40 px-4 py-1.5 text-xs font-medium tracking-wide uppercase text-gray-200 backdrop-blur-md transition hover:border-orange-500 hover:text-white"
           >
             Terminal
           </button>
@@ -166,7 +170,7 @@ export default function Page() {
         ))}
       </main>
 
-      {/* Mouse Scroll Indicator */}
+      {/* Mouse Indicator */}
       <div
         className="pointer-events-none absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 z-30 transition-opacity duration-500"
         style={{ opacity: scrollProgress > 0.85 ? 0 : 0.8 }}
