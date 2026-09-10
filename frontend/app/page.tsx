@@ -26,14 +26,12 @@ export default function Page() {
     }
   };
 
-  // Continuous monotonic camera trajectory (Never moves backward)
-  // Stage 1 (0.0 to 0.45): Approaching from exterior street to the door threshold
-  // Stage 2 (0.45 to 1.0): Passing straight through the open doorway deep into reception
+  // Continuous forward camera trajectory
   const baseScale = 1 + scrollProgress * 4.8;
   const panX = -scrollProgress * 42;
   const panY = -scrollProgress * 26;
 
-  // Door Opening Hand-off: 1.png seamlessly dissolves into 2.png between 0.40 and 0.46
+  // Seamless cross-dissolve hand-off
   const transitionPhase =
     scrollProgress <= 0.40
       ? 0
@@ -41,11 +39,14 @@ export default function Page() {
       ? 1
       : (scrollProgress - 0.40) / 0.06;
 
+  // Progressive cinematic darkness multiplier as we enter
+  const zoomDarkness = Math.min(scrollProgress * 1.15, 0.92);
+
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-black text-white select-none">
       {/* 3D Unified Camera Viewport */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        {/* Layer 1: Closed Door Exterior (1.png) - Active during approach only */}
+        {/* Layer 1: Closed Door Exterior (1.png) */}
         <div
           className="absolute inset-0 will-change-transform"
           style={{
@@ -60,8 +61,9 @@ export default function Page() {
             alt="CYLIX Exterior"
             fill
             priority
+            quality={100}
             sizes="100vw"
-            className="object-cover object-center brightness-105 contrast-110"
+            className="object-cover object-center"
           />
 
           {/* Exterior Entrance Ambient Flare */}
@@ -79,7 +81,7 @@ export default function Page() {
           />
         </div>
 
-        {/* Layer 2: Open Door Interior (2.png) - Continues seamlessly forward */}
+        {/* Layer 2: Open Door Interior (2.png) */}
         <div
           className="absolute inset-0 will-change-transform"
           style={{
@@ -94,11 +96,12 @@ export default function Page() {
             alt="CYLIX Open Door & Interior"
             fill
             priority
+            quality={100}
             sizes="100vw"
-            className="object-cover object-center brightness-105 contrast-105"
+            className="object-cover object-center"
           />
 
-          {/* Deep Interior Hallway Warm Illumination */}
+          {/* Interior Hallway Illumination */}
           <div
             className="absolute rounded-full pointer-events-none blur-3xl"
             style={{
@@ -113,16 +116,19 @@ export default function Page() {
           />
         </div>
 
-        {/* Vignette Depth Shadow */}
+        {/* Cinematic Top/Bottom Framing Shadow */}
         <div
-          className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/60 via-transparent to-black/40"
-          style={{ opacity: 1 - scrollProgress * 0.3 }}
+          className="absolute inset-0 pointer-events-none transition-opacity duration-300 bg-gradient-to-t from-black/85 via-transparent to-black/60"
+          style={{ opacity: 0.5 + zoomDarkness * 0.45 }}
         />
+
+        {/* Dynamic Peripheral Radial Black Vignette - Darkens edges as you zoom */}
         <div
-          className="absolute inset-0 pointer-events-none"
+          className="absolute inset-0 pointer-events-none transition-opacity duration-300"
           style={{
-            background: "radial-gradient(circle at 72% 70%, transparent 35%, rgba(0, 0, 0, 0.85) 100%)",
-            opacity: 0.4 + scrollProgress * 0.4,
+            background:
+              "radial-gradient(circle at 72% 70%, transparent 22%, rgba(0, 0, 0, 0.65) 60%, rgba(0, 0, 0, 0.95) 100%)",
+            opacity: 0.35 + zoomDarkness * 0.65,
           }}
         />
       </div>
