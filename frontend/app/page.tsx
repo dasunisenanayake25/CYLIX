@@ -26,12 +26,12 @@ export default function Page() {
     }
   };
 
-  // Continuous forward camera trajectory
+  // Continuous camera forward movement
   const baseScale = 1 + scrollProgress * 4.8;
   const panX = -scrollProgress * 42;
   const panY = -scrollProgress * 26;
 
-  // Seamless cross-dissolve hand-off
+  // Door opening transition between 0.40 and 0.46
   const transitionPhase =
     scrollProgress <= 0.40
       ? 0
@@ -39,8 +39,8 @@ export default function Page() {
       ? 1
       : (scrollProgress - 0.40) / 0.06;
 
-  // Progressive cinematic darkness multiplier as we enter
-  const zoomDarkness = Math.min(scrollProgress * 1.15, 0.92);
+  // Cinematic deep-black progressive scale
+  const blackVibeIntensity = Math.min(scrollProgress * 1.25, 0.95);
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-black text-white select-none">
@@ -66,7 +66,7 @@ export default function Page() {
             className="object-cover object-center"
           />
 
-          {/* Exterior Entrance Ambient Flare */}
+          {/* Exterior Entrance Flare */}
           <div
             className="absolute rounded-full pointer-events-none blur-3xl"
             style={{
@@ -76,7 +76,7 @@ export default function Page() {
               height: "300px",
               background:
                 "radial-gradient(circle, rgba(56, 189, 248, 0.45) 0%, rgba(249, 115, 22, 0.15) 50%, transparent 70%)",
-              opacity: Math.min(scrollProgress * 2, 0.7),
+              opacity: Math.min(scrollProgress * 2, 0.6),
             }}
           />
         </div>
@@ -101,7 +101,7 @@ export default function Page() {
             className="object-cover object-center"
           />
 
-          {/* Interior Hallway Illumination */}
+          {/* Interior Illumination */}
           <div
             className="absolute rounded-full pointer-events-none blur-3xl"
             style={{
@@ -116,19 +116,25 @@ export default function Page() {
           />
         </div>
 
-        {/* Cinematic Top/Bottom Framing Shadow */}
+        {/* Global Ambient Dark Base Tint */}
+        <div className="absolute inset-0 pointer-events-none bg-black/25" />
+
+        {/* Top/Bottom Cinematic Cinema-Scope Letterbox Shading */}
         <div
-          className="absolute inset-0 pointer-events-none transition-opacity duration-300 bg-gradient-to-t from-black/85 via-transparent to-black/60"
-          style={{ opacity: 0.5 + zoomDarkness * 0.45 }}
+          className="absolute inset-0 pointer-events-none transition-opacity duration-300 bg-gradient-to-t from-black/90 via-transparent to-black/75"
+          style={{ opacity: 0.7 + blackVibeIntensity * 0.3 }}
         />
 
-        {/* Dynamic Peripheral Radial Black Vignette - Darkens edges as you zoom */}
+        {/* Left Peripheral City Dimmer (Keeps eye drawn to the entrance) */}
+        <div className="absolute inset-y-0 left-0 w-2/5 pointer-events-none bg-gradient-to-r from-black/60 to-transparent" />
+
+        {/* Deep Peripheral Radial Black Vignette */}
         <div
           className="absolute inset-0 pointer-events-none transition-opacity duration-300"
           style={{
             background:
-              "radial-gradient(circle at 72% 70%, transparent 22%, rgba(0, 0, 0, 0.65) 60%, rgba(0, 0, 0, 0.95) 100%)",
-            opacity: 0.35 + zoomDarkness * 0.65,
+              "radial-gradient(circle at 72% 70%, transparent 18%, rgba(0, 0, 0, 0.75) 55%, rgba(0, 0, 0, 0.98) 100%)",
+            opacity: 0.55 + blackVibeIntensity * 0.45,
           }}
         />
       </div>
@@ -142,7 +148,7 @@ export default function Page() {
           <button
             type="button"
             onClick={handleReset}
-            className="rounded-full border border-white/20 bg-black/40 px-4 py-1.5 text-xs font-medium tracking-wide uppercase text-gray-200 backdrop-blur-md transition hover:border-orange-500 hover:text-white"
+            className="rounded-full border border-white/20 bg-black/50 px-4 py-1.5 text-xs font-medium tracking-wide uppercase text-gray-200 backdrop-blur-md transition hover:border-orange-500 hover:text-white"
           >
             Terminal
           </button>
@@ -160,7 +166,7 @@ export default function Page() {
         ))}
       </main>
 
-      {/* Mouse Indicator */}
+      {/* Mouse Scroll Indicator */}
       <div
         className="pointer-events-none absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 z-30 transition-opacity duration-500"
         style={{ opacity: scrollProgress > 0.85 ? 0 : 0.8 }}
