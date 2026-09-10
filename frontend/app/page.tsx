@@ -26,12 +26,10 @@ export default function Page() {
     }
   };
 
-  // Monotonic forward camera trajectory
   const baseScale = 1 + scrollProgress * 4.8;
   const panX = -scrollProgress * 42;
   const panY = -scrollProgress * 26;
 
-  // Door opening transition between 0.40 and 0.46
   const transitionPhase =
     scrollProgress <= 0.40
       ? 0
@@ -39,9 +37,8 @@ export default function Page() {
       ? 1
       : (scrollProgress - 0.40) / 0.06;
 
-  // As we approach/enter, blackness fades out and building glow brightens
   const blackFade = Math.max(1 - scrollProgress * 0.85, 0.1);
-  const buildingBrightness = 1 + scrollProgress * 0.18; // Enhances building light
+  const buildingBrightness = 1 + scrollProgress * 0.18;
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-black text-white select-none">
@@ -55,7 +52,7 @@ export default function Page() {
             transformOrigin: "72% 70%",
             opacity: 1 - transitionPhase,
             visibility: transitionPhase >= 1 ? "hidden" : "visible",
-            filter: `brightness(${buildingBrightness}) contrast(1.05)`,
+            filter: `brightness(${buildingBrightness}) contrast(1.06) saturate(1.15)`,
           }}
         >
           <Image
@@ -68,18 +65,41 @@ export default function Page() {
             className="object-cover object-center"
           />
 
-          {/* Exterior Entrance Ambient Flare */}
+          {/* Cyan Glow on Top Logo / Signage Area */}
           <div
-            className="absolute rounded-full pointer-events-none blur-3xl transition-all duration-300"
+            className="absolute rounded-full pointer-events-none blur-3xl opacity-60 mix-blend-screen"
             style={{
-              top: "58%",
+              top: "22%",
               left: "68%",
-              width: "360px",
-              height: "360px",
+              width: "320px",
+              height: "220px",
               background:
-                "radial-gradient(circle, rgba(56, 189, 248, 0.6) 0%, rgba(249, 115, 22, 0.25) 45%, transparent 70%)",
-              opacity: 0.3 + scrollProgress * 0.7,
-              transform: `scale(${1 + scrollProgress * 0.8})`,
+                "radial-gradient(ellipse, rgba(6, 182, 212, 0.5) 0%, rgba(59, 130, 246, 0.25) 50%, transparent 80%)",
+            }}
+          />
+
+          {/* Warm Amber Entrance Ground & Steps Accent Glow */}
+          <div
+            className="absolute rounded-full pointer-events-none blur-3xl opacity-50 mix-blend-screen"
+            style={{
+              top: "68%",
+              left: "66%",
+              width: "420px",
+              height: "260px",
+              background:
+                "radial-gradient(ellipse, rgba(251, 146, 60, 0.4) 0%, rgba(234, 88, 12, 0.15) 50%, transparent 75%)",
+            }}
+          />
+
+          {/* Vertical Blue Architectural Light Beam Accent */}
+          <div
+            className="absolute pointer-events-none blur-xl opacity-40 mix-blend-screen"
+            style={{
+              top: "40%",
+              left: "58%",
+              width: "40px",
+              height: "350px",
+              background: "linear-gradient(to bottom, rgba(56, 189, 248, 0.8), rgba(99, 102, 241, 0.4), transparent)",
             }}
           />
         </div>
@@ -92,7 +112,7 @@ export default function Page() {
             transformOrigin: "72% 70%",
             opacity: transitionPhase,
             visibility: transitionPhase <= 0 ? "hidden" : "visible",
-            filter: `brightness(${buildingBrightness * 1.05}) contrast(1.04)`,
+            filter: `brightness(${buildingBrightness * 1.05}) contrast(1.05) saturate(1.18)`,
           }}
         >
           <Image
@@ -105,40 +125,40 @@ export default function Page() {
             className="object-cover object-center"
           />
 
-          {/* Golden/Cyan Interior Room Radiance */}
+          {/* Vibrant Golden/Cyan Interior Room Radiance */}
           <div
-            className="absolute rounded-full pointer-events-none blur-3xl transition-opacity duration-500"
+            className="absolute rounded-full pointer-events-none blur-3xl transition-opacity duration-500 mix-blend-screen"
             style={{
               top: "60%",
               left: "72%",
               width: "480px",
               height: "480px",
               background:
-                "radial-gradient(circle, rgba(251, 146, 60, 0.5) 0%, rgba(56, 189, 248, 0.35) 45%, transparent 70%)",
+                "radial-gradient(circle, rgba(251, 146, 60, 0.5) 0%, rgba(6, 182, 212, 0.35) 45%, transparent 70%)",
               opacity: Math.max((scrollProgress - 0.4) * 1.6, 0),
             }}
           />
         </div>
 
-        {/* Soft Dimming Base (Dissolves as you approach) */}
+        {/* Subtle Ambient Night Overlay */}
         <div 
-          className="absolute inset-0 pointer-events-none bg-black/30 transition-opacity duration-300"
+          className="absolute inset-0 pointer-events-none bg-black/20 transition-opacity duration-300"
           style={{ opacity: blackFade }}
         />
 
-        {/* Cinematic Vertical Frame Shading (Fades down dynamically) */}
+        {/* Top/Bottom Cinematic Shading */}
         <div
           className="absolute inset-0 pointer-events-none transition-opacity duration-300 bg-gradient-to-t from-black/80 via-transparent to-black/60"
-          style={{ opacity: blackFade * 0.9 }}
+          style={{ opacity: blackFade * 0.85 }}
         />
 
-        {/* Dynamic Vignette (Opens up widely as building gets closer) */}
+        {/* Dynamic Vignette */}
         <div
           className="absolute inset-0 pointer-events-none transition-opacity duration-300"
           style={{
             background:
               "radial-gradient(circle at 72% 70%, transparent 40%, rgba(0, 0, 0, 0.7) 75%, rgba(0, 0, 0, 0.95) 100%)",
-            opacity: blackFade * 0.8,
+            opacity: blackFade * 0.75,
           }}
         />
       </div>
