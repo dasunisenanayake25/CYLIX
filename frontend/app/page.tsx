@@ -3,15 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
-interface SectionItem {
-  id: string;
-  name: string;
-  title: string;
-  subtitle: string;
-  description: string;
-}
-
-const sections: SectionItem[] = [
+const sections = [
   {
     id: "gateway",
     name: "Gateway",
@@ -70,8 +62,8 @@ const sections: SectionItem[] = [
   },
 ];
 
-export default function Page() {
-  const [activeSection, setActiveSection] = useState<string>("gateway");
+const HomePage = () => {
+  const [activeSection, setActiveSection] = useState("gateway");
   const containerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -108,8 +100,7 @@ export default function Page() {
   };
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-black text-white font-sans select-none">
-      {/* Background Image Layer */}
+    <div className="relative h-screen w-screen overflow-hidden bg-black text-white select-none">
       <div className="fixed inset-0 z-0 pointer-events-none">
         <Image
           src="/1.png"
@@ -118,12 +109,10 @@ export default function Page() {
           priority
           className="object-cover object-center"
         />
-        {/* Dark Vignette Overlay for Text Legibility */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
-        <div className="absolute inset-0 bg-black/40 backdrop-brightness-75" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-black/30" />
+        <div className="absolute inset-0 bg-black/40" />
       </div>
 
-      {/* Fixed Top Header */}
       <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-8 py-6 md:px-16 pointer-events-none">
         <div className="pointer-events-auto cursor-pointer">
           <span className="text-xl font-black tracking-widest text-orange-500">CYLIX</span>
@@ -139,7 +128,6 @@ export default function Page() {
         </div>
       </header>
 
-      {/* Snap Scroll Sections */}
       <main
         ref={containerRef}
         className="relative z-20 h-screen w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
@@ -189,14 +177,12 @@ export default function Page() {
         ))}
       </main>
 
-      {/* Mouse Indicator */}
       <div className="pointer-events-none absolute bottom-14 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 z-30 opacity-75">
         <div className="h-7 w-4 rounded-full border border-gray-500 flex items-start justify-center p-1">
           <div className="h-1.5 w-1 rounded-full bg-orange-500 animate-bounce" />
         </div>
       </div>
 
-      {/* Bottom Nav */}
       <nav className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-4 sm:gap-6 px-6 py-2 overflow-x-auto max-w-full [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {sections.map((sec) => {
           const isActive = activeSection === sec.id;
@@ -225,4 +211,6 @@ export default function Page() {
       </nav>
     </div>
   );
-}
+};
+
+export default HomePage;
