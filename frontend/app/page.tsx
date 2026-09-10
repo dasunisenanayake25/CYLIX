@@ -15,7 +15,18 @@ const sections = [
 
 export default function Page() {
   const [activeSection, setActiveSection] = useState("gateway");
+  const [scrollProgress, setScrollProgress] = useState(0);
   const containerRef = useRef<HTMLElement>(null);
+
+  const handleScroll = () => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const scrollTop = container.scrollTop;
+    const maxScroll = container.scrollHeight - container.clientHeight;
+    const progress = maxScroll > 0 ? scrollTop / maxScroll : 0;
+    setScrollProgress(Math.min(Math.max(progress, 0), 1));
+  };
 
   useEffect(() => {
     const container = containerRef.current;
@@ -50,20 +61,38 @@ export default function Page() {
     }
   };
 
+  // Circular arc path calculations based on scroll progress
+  const scale = 1 + scrollProgress * 1.85;
+  const translateX = -Math.sin(scrollProgress * Math.PI * 0.8) * 18 - scrollProgress * 22;
+  const translateY = -Math.sin(scrollProgress * Math.PI * 0.5) * 8 - scrollProgress * 12;
+  const rotate = Math.sin(scrollProgress * Math.PI) * 1.5;
+
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-black text-white select-none">
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <Image
-          src="/1.png"
-          alt="CYLIX Building"
-          fill
-          priority
-          className="object-cover object-right md:object-center brightness-105 contrast-105"
-        />
+      {/* Dynamic 3D Curved Scroll Camera Rig */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div
+          className="absolute inset-0 will-change-transform transition-transform duration-300 ease-out"
+          style={{
+            transform: `translate3d(${translateX}%, ${translateY}%, 0) scale(${scale}) rotate(${rotate}deg)`,
+            transformOrigin: "72% 70%",
+          }}
+        >
+          <Image
+            src="/1.png"
+            alt="CYLIX Building Entrance"
+            fill
+            priority
+            className="object-cover object-center brightness-105 contrast-105"
+          />
+        </div>
+
+        {/* Ambient Lighting Vignettes */}
         <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/80 to-transparent" />
         <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/60 to-transparent" />
       </div>
 
+      {/* Top Header */}
       <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-8 py-6 md:px-16 pointer-events-none">
         <div className="pointer-events-auto cursor-pointer">
           <span className="text-xl font-black tracking-widest text-orange-500">CYLIX</span>
@@ -79,25 +108,29 @@ export default function Page() {
         </div>
       </header>
 
+      {/* Scrollable Container */}
       <main
         ref={containerRef}
+        onScroll={handleScroll}
         className="relative z-20 h-screen w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
       >
         {sections.map((item) => (
           <section
             key={item.id}
             id={item.id}
-            className="relative flex h-screen w-full snap-start items-center justify-center"
+            className="relative flex h-screen w-full snap-start items-center justify-center pointer-events-none"
           />
         ))}
       </main>
 
+      {/* Mouse Indicator */}
       <div className="pointer-events-none absolute bottom-14 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 z-30 opacity-80">
         <div className="h-7 w-4 rounded-full border border-gray-300 flex items-start justify-center p-1 backdrop-blur-xs">
           <div className="h-1.5 w-1 rounded-full bg-orange-500 animate-bounce" />
         </div>
       </div>
 
+      {/* Bottom Navigation */}
       <nav className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-4 sm:gap-6 px-6 py-2 overflow-x-auto max-w-full backdrop-blur-sm rounded-full bg-black/20 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {sections.map((sec) => {
           const isActive = activeSection === sec.id;
