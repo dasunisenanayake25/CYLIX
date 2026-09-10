@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRef, useState } from "react";
 
-const totalSteps = 14;
+const totalSteps = 16;
 
 export default function Page() {
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -26,40 +26,43 @@ export default function Page() {
     }
   };
 
-  // Phase 1: Camera approach towards entrance door (0% to 45%)
-  const approachPhase = Math.min(scrollProgress / 0.45, 1);
-  const cameraZ = approachPhase * 820;
-  const cameraPanX = -approachPhase * 310;
-  const cameraPanY = -approachPhase * 110;
-  const cameraPitch = Math.sin(approachPhase * Math.PI) * 2.2;
-  const cameraRoll = Math.sin(approachPhase * Math.PI * 0.7) * 1.0;
+  // Phase 1: Camera approach to exterior entrance door (0% to 50%)
+  const approachPhase = Math.min(scrollProgress / 0.5, 1);
+  const cameraZ = approachPhase * 850;
+  const cameraPanX = -approachPhase * 315;
+  const cameraPanY = -approachPhase * 115;
+  const cameraPitch = Math.sin(approachPhase * Math.PI) * 2.0;
+  const cameraRoll = Math.sin(approachPhase * Math.PI * 0.7) * 0.8;
 
-  // Phase 2: Door opening and entering transition (45% to 55%)
-  const enterPhase =
-    scrollProgress <= 0.45
+  // Phase 2: Ultra smooth cross-fade blend between 1.png and 2.png (44% to 56%)
+  const blendRaw =
+    scrollProgress <= 0.44
       ? 0
-      : scrollProgress >= 0.55
+      : scrollProgress >= 0.56
       ? 1
-      : (scrollProgress - 0.45) / 0.1;
+      : (scrollProgress - 0.44) / 0.12;
+  // Cosine smooth-step easing to eliminate abrupt image switching
+  const blendEased = 0.5 - Math.cos(blendRaw * Math.PI) / 2;
 
-  // Phase 3: Stepping inside the interior room (55% to 100%)
-  const insidePhase = Math.max((scrollProgress - 0.55) / 0.45, 0);
-  const insideZoom = 1 + insidePhase * 0.35;
-  const insidePanY = -insidePhase * 40;
+  // Phase 3: Stepping through the open door and moving deeper inside (50% to 100%)
+  const insidePhase = Math.max((scrollProgress - 0.5) / 0.5, 0);
+  const insideScale = 1.15 + insidePhase * 0.45;
+  const insideTranslateX = -insidePhase * 40;
+  const insideTranslateY = -insidePhase * 30;
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-black text-white select-none">
-      {/* Exterior 3D Viewport Rig (1.png) */}
+      {/* Exterior Layer (1.png) */}
       <div
-        className="fixed inset-0 z-0 pointer-events-none overflow-hidden transition-opacity duration-700"
+        className="fixed inset-0 z-0 pointer-events-none overflow-hidden will-change-transform"
         style={{
           perspective: "1100px",
           perspectiveOrigin: "60% 65%",
-          opacity: 1 - enterPhase,
+          opacity: 1 - blendEased,
         }}
       >
         <div
-          className="absolute -inset-16 will-change-transform transition-transform duration-500 ease-out"
+          className="absolute -inset-16 will-change-transform"
           style={{
             transform: `translate3d(${cameraPanX}px, ${cameraPanY}px, ${cameraZ}px) rotateX(${cameraPitch}deg) rotateZ(${cameraRoll}deg)`,
             transformOrigin: "73% 72%",
@@ -67,30 +70,31 @@ export default function Page() {
         >
           <Image
             src="/1.png"
-            alt="CYLIX Headquarters Entrance"
+            alt="CYLIX Headquarters Exterior"
             fill
             priority
+            sizes="100vw"
             className="object-cover object-center brightness-105 contrast-110"
           />
 
-          {/* Ambient Door Glow */}
+          {/* Entrance Door Ambient Flare */}
           <div
-            className="absolute rounded-full pointer-events-none transition-opacity duration-700 blur-3xl"
+            className="absolute rounded-full pointer-events-none transition-opacity duration-500 blur-3xl"
             style={{
               top: "58%",
               left: "68%",
               width: "320px",
               height: "320px",
               background:
-                "radial-gradient(circle, rgba(56, 189, 248, 0.45), rgba(249, 115, 22, 0.15), transparent 70%)",
-              opacity: 0.25 + approachPhase * 0.6,
-              transform: `scale(${1 + approachPhase * 0.7})`,
+                "radial-gradient(circle, rgba(56, 189, 248, 0.5) 0%, rgba(249, 115, 22, 0.2) 40%, transparent 70%)",
+              opacity: 0.2 + approachPhase * 0.6,
+              transform: `scale(${1 + approachPhase * 0.6})`,
             }}
           />
         </div>
 
         <div
-          className="absolute inset-0 pointer-events-none transition-opacity duration-500 bg-gradient-to-t from-black/70 via-transparent to-black/40"
+          className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/70 via-transparent to-black/40"
           style={{ opacity: 1 - approachPhase * 0.4 }}
         />
         <div
@@ -102,50 +106,36 @@ export default function Page() {
         />
       </div>
 
-      {/* Interior / Open Door Reveal Layer (2.png) */}
+      {/* Seamless Open Door / Interior Layer (2.png) */}
       <div
-        className="fixed inset-0 z-10 pointer-events-none overflow-hidden transition-opacity duration-500 ease-out"
+        className="fixed inset-0 z-10 pointer-events-none overflow-hidden will-change-transform"
         style={{
-          opacity: enterPhase,
+          opacity: blendEased,
         }}
       >
         <div
-          className="absolute inset-0 will-change-transform transition-transform duration-500 ease-out"
+          className="absolute inset-0 will-change-transform"
           style={{
-            transform: `scale(${insideZoom}) translateY(${insidePanY}px)`,
+            transform: `scale(${insideScale}) translate3d(${insideTranslateX}px, ${insideTranslateY}px, 0)`,
+            transformOrigin: "68% 65%",
           }}
         >
           <Image
             src="/2.png"
-            alt="CYLIX Interior Workspace"
+            alt="CYLIX Open Door Entrance"
             fill
             priority
-            className="object-cover object-center brightness-110 contrast-105"
+            sizes="100vw"
+            className="object-cover object-center brightness-105 contrast-105"
           />
         </div>
 
-        {/* Ambient Warm Atmosphere for Interior */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40" />
-        <div className="absolute inset-0 bg-radial from-transparent via-black/20 to-black/70" />
-
-        {/* Welcome Text Tag inside */}
-        <div
-          className="absolute inset-0 flex flex-col items-center justify-center transition-all duration-700"
-          style={{
-            opacity: Math.max((insidePhase - 0.2) / 0.8, 0),
-            transform: `translateY(${(1 - insidePhase) * 30}px)`,
-          }}
-        >
-          <span className="text-xs uppercase tracking-[0.3em] text-orange-500 font-semibold drop-shadow">
-            Welcome To
-          </span>
-          <h2 className="text-4xl md:text-6xl font-black tracking-wider text-white mt-2 drop-shadow-lg">
-            CYLIX HEADQUARTERS
-          </h2>
-        </div>
+        {/* Ambient Match Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 pointer-events-none" />
+        <div className="absolute inset-0 bg-radial from-transparent via-transparent to-black/60 pointer-events-none" />
       </div>
 
-      {/* Header */}
+      {/* Top Header */}
       <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-8 py-6 md:px-16 pointer-events-none">
         <div className="pointer-events-auto cursor-pointer" onClick={handleReset}>
           <span className="text-xl font-black tracking-widest text-orange-500">CYLIX</span>
@@ -161,7 +151,7 @@ export default function Page() {
         </div>
       </header>
 
-      {/* Scroll Engine */}
+      {/* Scroll Track */}
       <main
         ref={containerRef}
         onScroll={handleScroll}
