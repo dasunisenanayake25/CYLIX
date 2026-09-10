@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRef, useState } from "react";
 
-const totalSteps = 12;
+const totalSteps = 14;
 
 export default function Page() {
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -26,7 +26,7 @@ export default function Page() {
     }
   };
 
-  // Phase 1: Reach the door (0% to 45%)
+  // Phase 1: Camera approach towards entrance door (0% to 45%)
   const approachPhase = Math.min(scrollProgress / 0.45, 1);
   const cameraZ = approachPhase * 820;
   const cameraPanX = -approachPhase * 310;
@@ -34,27 +34,29 @@ export default function Page() {
   const cameraPitch = Math.sin(approachPhase * Math.PI) * 2.2;
   const cameraRoll = Math.sin(approachPhase * Math.PI * 0.7) * 1.0;
 
-  // Phase 2: Open the door (45% to 50%)
-  const doorOpenPhase =
+  // Phase 2: Door opening and entering transition (45% to 55%)
+  const enterPhase =
     scrollProgress <= 0.45
       ? 0
-      : scrollProgress >= 0.5
+      : scrollProgress >= 0.55
       ? 1
-      : (scrollProgress - 0.45) / 0.05;
+      : (scrollProgress - 0.45) / 0.1;
 
-  const doorSlideLeft = -doorOpenPhase * 105;
-  const doorSlideRight = doorOpenPhase * 105;
-  const interiorLightOpacity = doorOpenPhase * 0.95;
-
-  // Phase 3: Remaining headroom (50% to 100%)
-  const remainingPhase = Math.max((scrollProgress - 0.5) / 0.5, 0);
+  // Phase 3: Stepping inside the interior room (55% to 100%)
+  const insidePhase = Math.max((scrollProgress - 0.55) / 0.45, 0);
+  const insideZoom = 1 + insidePhase * 0.35;
+  const insidePanY = -insidePhase * 40;
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-black text-white select-none">
-      {/* 3D Viewport Rig */}
+      {/* Exterior 3D Viewport Rig (1.png) */}
       <div
-        className="fixed inset-0 z-0 pointer-events-none overflow-hidden"
-        style={{ perspective: "1100px", perspectiveOrigin: "60% 65%" }}
+        className="fixed inset-0 z-0 pointer-events-none overflow-hidden transition-opacity duration-700"
+        style={{
+          perspective: "1100px",
+          perspectiveOrigin: "60% 65%",
+          opacity: 1 - enterPhase,
+        }}
       >
         <div
           className="absolute -inset-16 will-change-transform transition-transform duration-500 ease-out"
@@ -63,7 +65,6 @@ export default function Page() {
             transformOrigin: "73% 72%",
           }}
         >
-          {/* Main Headquarters Exterior Layer */}
           <Image
             src="/1.png"
             alt="CYLIX Headquarters Entrance"
@@ -72,90 +73,26 @@ export default function Page() {
             className="object-cover object-center brightness-105 contrast-110"
           />
 
-          {/* Interactive Door Portal Mask Layer */}
+          {/* Ambient Door Glow */}
           <div
-            className="absolute overflow-hidden"
+            className="absolute rounded-full pointer-events-none transition-opacity duration-700 blur-3xl"
             style={{
-              top: "56%",
-              left: "67%",
-              width: "18%",
-              height: "32%",
-            }}
-          >
-            {/* Interior Reveal Stage */}
-            <div
-              className="absolute inset-0 bg-gradient-to-b from-[#0a1829] via-[#0d2a4d] to-[#040912] flex flex-col items-center justify-center transition-opacity duration-300"
-              style={{ opacity: doorOpenPhase > 0.05 ? 1 : 0 }}
-            >
-              <div
-                className="absolute inset-0 transition-transform duration-700 ease-out"
-                style={{
-                  transform: `scale(${1 + doorOpenPhase * 0.4})`,
-                  backgroundImage:
-                    "radial-gradient(ellipse at center 60%, rgba(56, 189, 248, 0.4) 0%, rgba(14, 165, 233, 0.15) 45%, transparent 70%), repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 30px)",
-                }}
-              />
-
-              <div
-                className="relative z-10 flex flex-col items-center gap-2 transition-all duration-500"
-                style={{
-                  opacity: interiorLightOpacity,
-                  transform: `translateY(${(1 - doorOpenPhase) * 20}px)`,
-                }}
-              >
-                <div className="h-8 w-8 rounded-lg border border-cyan-400/60 bg-cyan-500/20 shadow-[0_0_25px_rgba(34,211,238,0.8)] backdrop-blur-sm flex items-center justify-center">
-                  <span className="text-cyan-300 text-xs font-bold font-mono">CX</span>
-                </div>
-                <span className="text-[9px] tracking-[0.3em] font-semibold text-cyan-200/80 uppercase">
-                  Workspace
-                </span>
-              </div>
-            </div>
-
-            {/* Left Sliding Glass Panel */}
-            <div
-              className="absolute top-0 bottom-0 left-0 w-1/2 border-r border-cyan-400/40 bg-gradient-to-r from-slate-900/40 to-slate-800/60 backdrop-blur-xs transition-transform duration-300 ease-out"
-              style={{
-                transform: `translateX(${doorSlideLeft}%)`,
-              }}
-            >
-              <div className="absolute inset-y-6 right-2 w-[1.5px] bg-cyan-400/50 shadow-[0_0_8px_rgba(56,189,248,0.8)]" />
-            </div>
-
-            {/* Right Sliding Glass Panel */}
-            <div
-              className="absolute top-0 bottom-0 right-0 w-1/2 border-l border-cyan-400/40 bg-gradient-to-l from-slate-900/40 to-slate-800/60 backdrop-blur-xs transition-transform duration-300 ease-out"
-              style={{
-                transform: `translateX(${doorSlideRight}%)`,
-              }}
-            >
-              <div className="absolute inset-y-6 left-2 w-[1.5px] bg-cyan-400/50 shadow-[0_0_8px_rgba(56,189,248,0.8)]" />
-            </div>
-          </div>
-
-          {/* Dynamic Light Beam Emitter */}
-          <div
-            className="absolute rounded-full pointer-events-none transition-all duration-500 blur-3xl"
-            style={{
-              top: "56%",
-              left: "67%",
-              width: "360px",
-              height: "360px",
+              top: "58%",
+              left: "68%",
+              width: "320px",
+              height: "320px",
               background:
-                "radial-gradient(circle, rgba(56, 189, 248, 0.7) 0%, rgba(249, 115, 22, 0.25) 40%, transparent 70%)",
-              opacity: 0.2 + approachPhase * 0.4 + doorOpenPhase * 0.5,
-              transform: `scale(${1 + approachPhase * 0.6 + doorOpenPhase * 0.6})`,
+                "radial-gradient(circle, rgba(56, 189, 248, 0.45), rgba(249, 115, 22, 0.15), transparent 70%)",
+              opacity: 0.25 + approachPhase * 0.6,
+              transform: `scale(${1 + approachPhase * 0.7})`,
             }}
           />
         </div>
 
-        {/* Global Atmospheric Haze */}
         <div
           className="absolute inset-0 pointer-events-none transition-opacity duration-500 bg-gradient-to-t from-black/70 via-transparent to-black/40"
           style={{ opacity: 1 - approachPhase * 0.4 }}
         />
-
-        {/* Cinematic Vignette */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -165,7 +102,50 @@ export default function Page() {
         />
       </div>
 
-      {/* Top Header */}
+      {/* Interior / Open Door Reveal Layer (2.png) */}
+      <div
+        className="fixed inset-0 z-10 pointer-events-none overflow-hidden transition-opacity duration-500 ease-out"
+        style={{
+          opacity: enterPhase,
+        }}
+      >
+        <div
+          className="absolute inset-0 will-change-transform transition-transform duration-500 ease-out"
+          style={{
+            transform: `scale(${insideZoom}) translateY(${insidePanY}px)`,
+          }}
+        >
+          <Image
+            src="/2.png"
+            alt="CYLIX Interior Workspace"
+            fill
+            priority
+            className="object-cover object-center brightness-110 contrast-105"
+          />
+        </div>
+
+        {/* Ambient Warm Atmosphere for Interior */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40" />
+        <div className="absolute inset-0 bg-radial from-transparent via-black/20 to-black/70" />
+
+        {/* Welcome Text Tag inside */}
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center transition-all duration-700"
+          style={{
+            opacity: Math.max((insidePhase - 0.2) / 0.8, 0),
+            transform: `translateY(${(1 - insidePhase) * 30}px)`,
+          }}
+        >
+          <span className="text-xs uppercase tracking-[0.3em] text-orange-500 font-semibold drop-shadow">
+            Welcome To
+          </span>
+          <h2 className="text-4xl md:text-6xl font-black tracking-wider text-white mt-2 drop-shadow-lg">
+            CYLIX HEADQUARTERS
+          </h2>
+        </div>
+      </div>
+
+      {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-8 py-6 md:px-16 pointer-events-none">
         <div className="pointer-events-auto cursor-pointer" onClick={handleReset}>
           <span className="text-xl font-black tracking-widest text-orange-500">CYLIX</span>
@@ -181,7 +161,7 @@ export default function Page() {
         </div>
       </header>
 
-      {/* Continuous Wheel Scroll Engine */}
+      {/* Scroll Engine */}
       <main
         ref={containerRef}
         onScroll={handleScroll}
